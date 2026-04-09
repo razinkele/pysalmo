@@ -71,12 +71,35 @@ When writing bash commands, strictly follow these rules to avoid triggering secu
 
 ---
 
-## inSALMON Marine Extension
+## PySALMO Architecture
 
-- Marine domain is optional — enabled by `marine:` config section
-- LifeStage enum in `src/instream/agents/life_stage.py` — never use magic numbers for life_history
-- MarineDomain in `src/instream/domains/marine.py` — orchestrates marine step
+### LifeStage enum
+- `src/instream/agents/life_stage.py` — NEVER use magic numbers for life_history
+- Values: FRY=0, PARR=1, SPAWNER=2, SMOLT=3, OCEAN_JUVENILE=4, OCEAN_ADULT=5, RETURNING_ADULT=6
+
+### inSALMO parity (freshwater)
+- Migration as 4th activity in habitat selection (`behavior.py` ~line 1108)
+- 4x habitat selection passes per day (dawn/day/dusk/night) for anadromous species
+- Per-substep resource regeneration between passes
+- `survival^step_length` fitness exponentiation
+- Forward condition projection: `mean_condition_survival()` in `survival.py`
+- Adult holding: `skip_indices` in `select_habitat_and_activity` excludes spawners
+- Features (opt-in via config): stochastic migration, two-piece condition-survival, spawn-cell noise, growth fitness
+
+### Marine domain
+- Optional — enabled by `marine:` config section
+- `MarineDomain` in `src/instream/domains/marine.py` — orchestrates marine step
 - Environmental drivers in `src/instream/io/env_drivers/` — StaticDriver for testing
-- Marine modules: `marine_growth.py`, `marine_survival.py`, `marine_fishing.py`, `smoltification.py`, `marine_migration.py`
-- Run marine tests: `micromamba run -n shiny python -m pytest tests/test_marine_*.py tests/test_smolt*.py tests/test_full_lifecycle.py -v`
-- inSALMO parity features (opt-in): adult holding, two-piece condition-survival, stochastic migration, spawn-cell noise, growth fitness
+- Modules: `marine_growth.py`, `marine_survival.py`, `marine_fishing.py`, `smoltification.py`, `marine_migration.py`
+
+### Key tests
+- Run all: `micromamba run -n shiny python -m pytest tests/ -v`
+- Marine: `micromamba run -n shiny python -m pytest tests/test_marine_*.py tests/test_smolt*.py tests/test_full_lifecycle.py -v`
+- Parity: `micromamba run -n shiny python -m pytest tests/test_performance_parity.py tests/test_insalmo_parity.py -v`
+- Performance parity is slow (~8 min) — runs full 913-day Example A simulation
+
+### Known parity gap
+- Outmigrants: 52% of NetLogo (21k vs 41k)
+- Root cause: drift food formula differs (Python: `conc*area*depth`; NetLogo: `86400*area*depth*velocity*conc/regen_dist`)
+- Fix requires: drift formula change + parameter recalibration + NetLogo-style fitness function
+- See: `docs/plans/2026-04-09-condition-projection-plan.md`

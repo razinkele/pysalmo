@@ -267,49 +267,78 @@ property-based tests, and performance regression tests.
 
 | Metric          | Value                          |
 |-----------------|--------------------------------|
-| Tests           | 694                            |
+| Tests           | 784                            |
 | Validation      | 11/11 NetLogo reference tests  |
-| Step time       | 48 ms (Example A, Numba JIT)   |
+| NetLogo parity  | 93% juveniles, 52% outmigrants |
+| Step time       | ~470 ms (Example A, 4x substep)|
 | Species         | Multi-species support          |
 | Reaches         | Multi-reach support            |
 | Sub-daily       | InSTREAM-SD hourly + peaking   |
+| Marine domain   | 7 life stages, 7 mortality sources |
 | Output          | 7 file types + CLI             |
-| Example B       | 3 reaches x 3 species working  |
+
+### NetLogo inSALMO 7.4 Parity
+
+Cross-validated against inSALMO 7.4 (NetLogo 7.0.3) and 7.3 (NetLogo 6.4.0):
+
+| Metric | PySALMO | NetLogo | Ratio |
+|--------|---------|---------|-------|
+| Adult spawner peak | 28 | 21 | 133% |
+| Juvenile peak abundance | 1,994 | 2,151 | **93%** |
+| Juvenile mean length | 5.31 cm | 4.29 cm | 124% |
+| Outmigrants | 21,416 | 41,152 | **52%** |
+| Speed | ~470 ms/step | ~5 s/step | **10x faster** |
 
 ### Completed
 
-- Core model infrastructure (Mesa orchestration, SoA state, FEMSpace)
-- YAML configuration with NLS parameter conversion
+**Core inSTREAM:**
+- Mesa orchestration, SoA state, FEMSpace, YAML config
 - Wisconsin bioenergetics (growth, consumption, respiration)
 - Five survival sources with logistic functions
 - Fitness-based habitat selection with survival integration
 - Spawning, egg development, and redd emergence
 - Multi-reach migration with junction network routing
 - Multi-species support (Example B: 3 reaches x 3 species)
-- Output system (7 file types: population, habitat, individual, redd, mortality, spatial, growth report)
-- CLI interface (`instream` command)
-- NumPy, Numba, and JAX compute backends (survival vectorized across all 3)
-- InSTREAM-SD sub-daily scheduling (hourly + peaking flow)
-- Growth accumulation with day-boundary application
+- Output system (7 file types), CLI interface
+- NumPy, Numba, and JAX compute backends
+- InSTREAM-SD sub-daily scheduling
 - 11/11 NetLogo validation tests passing
-- 674 unit, integration, property-based, and validation tests
-- JAX GPU backend with vectorized growth/survival kernels
-- FEM mesh reader (River2D/GMSH via meshio)
-- Shiny for Python frontend (configure, run, explore simulations)
-- Deploy skill for laguna.ku.lt Shiny Server
-- Angler harvest module with size-selective mortality and bag limits
-- Morris sensitivity analysis (one-at-a-time parameter screening)
-- Config-driven habitat restoration scenarios
-- Fitness memory (EMA), drift regen distance, spawn defense area
-- Per-species migration params, superindividual split thresholds
-- Anadromous adult life history with post-spawn mortality
-- Daily-integral solar irradiance (replaces noon-elevation approximation)
-- YearShuffler for stochastic multi-year input remapping
+- JAX GPU backend, FEM mesh reader (meshio)
+- Angler harvest, Morris sensitivity, habitat restoration
+- Shiny for Python frontend + laguna.ku.lt deployment
+
+**inSALMO parity (M1):**
+- LifeStage IntEnum (7 stages: FRY through RETURNING_ADULT)
+- Adult holding behavior (zero food intake for anadromous spawners)
+- Two-piece condition-survival (broken-stick starvation)
+- Stochastic outmigration probability (inSALMO style, opt-in)
+- Outmigrant date recording (virtual screw-trap output)
+- Stochastic spawn-cell perturbation (noise term)
+- Modified growth fitness ln(1+L/Lmax)
+- Migration as 4th activity in habitat selection
+- 4x habitat selection passes per day (dawn/day/dusk/night)
+- Per-substep resource regeneration
+- Survival^step_length fitness exponentiation
+- Forward condition-survival projection (mean_condition_survival)
+- Horizon-projected fitness for migration comparison
+
+**Marine extension (M2):**
+- Marine growth (O'Neill 1986 temp function, Hanson et al. bioenergetics)
+- 7 marine mortality sources (seal, cormorant, background, temperature, M74, fishing, bycatch)
+- Gear-specific fishing (logistic/normal selectivity, 4 gear types, bycatch)
+- Smoltification (photoperiod + temperature, seasonal window)
+- Maturation check with sea-winter probabilities
+- MarineDomain with environmental coupling (StaticDriver)
+- Smolt transition at river mouth (PARR -> marine)
+- Full lifecycle test (smolt -> ocean -> return -> spawn)
 
 ### Planned
 
+- Velocity-dependent drift food formula (requires parameter recalibration)
+- Full NetLogo fitness function (growth via condition projection only)
+- NetCDF/WMS environmental drivers for marine domain
+- Multi-generation population dynamics
 - Scenario comparison (side-by-side simulation runs)
-- Full Numba JIT compilation of fitness_all inner loop
 - Sphinx documentation build
 
 ## License

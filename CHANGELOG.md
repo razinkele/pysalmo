@@ -5,6 +5,54 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [1.0.0] - 2026-04-09 — PySALMO
+
+### Added — inSALMO Parity (Milestone 1)
+- LifeStage IntEnum with 7 stages (FRY through RETURNING_ADULT)
+- Adult holding behavior — anadromous spawners skip feeding via `skip_indices`
+- Two-piece condition-survival (broken-stick starvation function)
+- Stochastic outmigration probability (inSALMO style, opt-in config flag)
+- Outmigrant date recording for virtual screw-trap output
+- Stochastic spawn-cell perturbation (noise term on suitability scores)
+- Modified growth fitness term `ln(1+L/Lmax)` (inSALMO)
+- Migration as 4th activity in habitat selection (competing with drift/search/hide)
+- 4x habitat selection passes per day for anadromous species (dawn/day/dusk/night)
+- Per-substep resource regeneration between habitat selection passes
+- `survival^step_length` fitness exponentiation (correct for sub-daily)
+- Forward condition-survival projection (`mean_condition_survival`) matching NetLogo
+- Horizon-projected fitness for migration comparison
+- inSALMO parity validation suite with NetLogo 7.4 reference data
+
+### Added — Marine Extension (Milestone 2)
+- Marine growth module (O'Neill 1986 temperature function, Hanson et al. CMax)
+- 7 marine mortality sources (seal, cormorant, background, temperature, M74, fishing harvest, bycatch)
+- Gear-specific fishing (logistic/normal selectivity, 4 gear types, seasonal/zone closures)
+- Smoltification module (photoperiod + temperature triggers, seasonal window gating)
+- Maturation check with sea-winter conditional probabilities (Baltic distribution)
+- Marine zone migration with configurable zone graph
+- MarineDomain orchestrating marine step (growth, survival, fishing, maturation)
+- MarineSpace with zone connectivity and ZoneState
+- StaticDriver for environmental data from YAML seasonal tables
+- MarineConfig, ZoneConfig, GearConfig Pydantic models
+- TroutState marine fields (zone_idx, sea_winters, smolt_date, natal_reach_idx, smolt_readiness)
+- Smolt transition at river mouth (PARR -> marine instead of death)
+- Full lifecycle integration test (smolt -> ocean -> return -> spawn)
+- Performance parity test suite (Python vs NetLogo 7.4)
+
+### Changed
+- Project renamed from inSTREAM-py to PySALMO
+- Version bumped to 1.0.0
+- CLI entry point: `pysalmo` (+ `instream` alias)
+- Emerged anadromous fish assigned PARR (not FRY) to enable migration
+- `example_a.yaml` now includes `adult_arrival_file` and `population_file`
+- Replaced all life_history magic numbers with LifeStage enum
+- Extended `_LIFE_HISTORY_COLORS` for 7 stages in Shiny frontend
+
+### Fixed
+- Committed previously untracked `arrival_reader.py` and `help_panel.py`
+- Added `pytest.importorskip("meshio")` for optional dependency tests
+- Regenerated fitness-golden.csv reference data for 4x substep mode
+
 ## [0.11.0] - 2026-04-05
 
 ### Added
