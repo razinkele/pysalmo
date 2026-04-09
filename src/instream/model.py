@@ -1013,9 +1013,8 @@ class InSTREAMModel(mesa.Model):
             cs.available_drift[cells] += (
                 rp.drift_conc * cs.area[cells] * cs.depth[cells] * step_length
             )
-            cs.available_search[cells] += rp.search_prod * cs.area[cells] * step_length
-            # Cap at daily maximum
             max_drift = rp.drift_conc * cs.area[cells] * cs.depth[cells]
+            cs.available_search[cells] += rp.search_prod * cs.area[cells] * step_length
             cs.available_drift[cells] = np.minimum(cs.available_drift[cells], max_drift)
             max_search = rp.search_prod * cs.area[cells]
             cs.available_search[cells] = np.minimum(
